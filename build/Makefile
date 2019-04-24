@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named myG2Oedge
-
-# Build rule for target.
-myG2Oedge: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 myG2Oedge
-.PHONY : myG2Oedge
-
-# fast build rule for target.
-myG2Oedge/fast:
-	$(MAKE) -f src/CMakeFiles/myG2Oedge.dir/build.make src/CMakeFiles/myG2Oedge.dir/build
-.PHONY : myG2Oedge/fast
-
-#=============================================================================
 # Target rules for targets named testCal
 
 # Build rule for target.
@@ -157,7 +144,6 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... myG2Oedge"
 	@echo "... testCal"
 	@echo "... main"
 .PHONY : help

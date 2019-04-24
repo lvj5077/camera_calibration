@@ -68,7 +68,7 @@ int main(int argc, char const **argv)
   vector< Point3f > obj;
   for (int i = 0; i < board_height; i++)
     for (int j = 0; j < board_width; j++)
-      obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
+      obj.push_back(Point3f((float)j * square_size, (float)i * square_size, .01));
 
   for (int i=0;i<imgs.size();i++){
     cv::cvtColor(imgs[i], gray, CV_BGR2GRAY);
@@ -122,7 +122,7 @@ int main(int argc, char const **argv)
       v->setFixed( true ); 
       v->setId( i );
       
-      double z = (obj[i]).z+2; // avoid zero depth
+      double z = (obj[i]).z; // avoid zero depth
       double x = (obj[i]).x; 
       double y = (obj[i]).y; 
       v->setMarginalized(true);
@@ -133,7 +133,8 @@ int main(int argc, char const **argv)
   // camera pose || reference is points on wall which is also fixed 
   for ( int i=0; i<imgs.size()+1; i++ )
   {
-    g2o::VertexSE3* v = new g2o::VertexSE3();
+    // g2o::VertexSE3* v = new g2o::VertexSE3();
+    g2o::VertexSE3Expmap* v = new g2o::VertexSE3Expmap(); // camera pose
     v->setId( obj.size() + i );
     if ( i == 0)
           v->setFixed( true );
@@ -162,47 +163,47 @@ int main(int argc, char const **argv)
   }
 
 //=====================================add code wheel constarin===============================================================
-  for ( int i=0; i<imgs.size(); i++ )
-  {
-      g2o::VertexSE3* v = new g2o::VertexSE3();
-      v->setId(i+imgs.size()+obj.size()+1);
-      v->setEstimate( g2o::SE3Quat() );
-      optimizer.addVertex( v );
+  // for ( int i=0; i<imgs.size(); i++ )
+  // {
+  //     g2o::VertexSE3* v = new g2o::VertexSE3();
+  //     v->setId(i+imgs.size()+obj.size()+1);
+  //     v->setEstimate( g2o::SE3Quat() );
+  //     optimizer.addVertex( v );
 
-      g2o::EdgeSE3* edge_CtoW = new g2o::EdgeSE3();
-      edge_CtoW->vertices() [0] = optimizer.vertex( i+1 );
-      edge_CtoW->vertices() [1] = optimizer.vertex( i+imgs.size()+obj.size()+1 );
-      Eigen::Matrix<double, 6, 6> information_CtoW = Eigen::Matrix< double, 6,6 >::Identity();
-      information_CtoW(0,0) = information_CtoW(1,1) = information_CtoW(2,2) = 100;
-      information_CtoW(3,3) = information_CtoW(4,4) = information_CtoW(5,5) = 10000000000000000; // 不考虑translation了
-      edge_CtoW->setInformation( information_CtoW );
-      edge_CtoW->setMeasurement( g2o::SE3Quat() ); ////需要求解
-      optimizer.addEdge(edge_CtoW);
-  }
+  //     g2o::EdgeSE3* edge_CtoW = new g2o::EdgeSE3();
+  //     edge_CtoW->vertices() [0] = optimizer.vertex( i+1 );
+  //     edge_CtoW->vertices() [1] = optimizer.vertex( i+imgs.size()+obj.size()+1 );
+  //     Eigen::Matrix<double, 6, 6> information_CtoW = Eigen::Matrix< double, 6,6 >::Identity();
+  //     information_CtoW(0,0) = information_CtoW(1,1) = information_CtoW(2,2) = 100;
+  //     information_CtoW(3,3) = information_CtoW(4,4) = information_CtoW(5,5) = 10000000000000000; // 不考虑translation了
+  //     edge_CtoW->setInformation( information_CtoW );
+  //     edge_CtoW->setMeasurement( g2o::SE3Quat() ); ////需要求解
+  //     optimizer.addEdge(edge_CtoW);
+  // }
 
 
-  Eigen::Isometry3d T_prior =  Eigen::Isometry3d::Identity();
-  Mat cvR = cv::Mat::eye(3,3,CV_64F);
-  Eigen::Matrix3d r_eigen;
-  for ( int i=0; i<3; i++ )
-      for ( int j=0; j<3; j++ ) 
-          r_eigen(i,j) = cvR.at<double>(i,j);
+  // Eigen::Isometry3d T_prior =  Eigen::Isometry3d::Identity();
+  // Mat cvR = cv::Mat::eye(3,3,CV_64F);
+  // Eigen::Matrix3d r_eigen;
+  // for ( int i=0; i<3; i++ )
+  //     for ( int j=0; j<3; j++ ) 
+  //         r_eigen(i,j) = cvR.at<double>(i,j);
 
-  Eigen::AngleAxisd angle(r_eigen);
-  T_prior = angle;
-  T_prior(0,3) = 0.0; 
-  T_prior(1,3) = 0.0; 
-  T_prior(2,3) = 0.50;
+  // Eigen::AngleAxisd angle(r_eigen);
+  // T_prior = angle;
+  // T_prior(0,3) = 0.0; 
+  // T_prior(1,3) = 0.0; 
+  // T_prior(2,3) = 0.50;
 
-  for (int idx =1;idx< imgs.size();idx++){
-    g2o::EdgeSE3* edge_fix = new g2o::EdgeSE3();
-    edge_fix->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
-    edge_fix->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
-    Eigen::Matrix<double, 6, 6> information_fix = 10000000000*Eigen::Matrix< double, 6,6 >::Identity();
-    edge_fix->setInformation( information_fix );
-    edge_fix->setMeasurement( T_prior );
-    optimizer.addEdge(edge_fix);
-  }
+  // for (int idx =1;idx< imgs.size();idx++){
+  //   g2o::EdgeSE3* edge_fix = new g2o::EdgeSE3();
+  //   edge_fix->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
+  //   edge_fix->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
+  //   Eigen::Matrix<double, 6, 6> information_fix = 10000000000*Eigen::Matrix< double, 6,6 >::Identity();
+  //   edge_fix->setInformation( information_fix );
+  //   edge_fix->setMeasurement( T_prior );
+  //   optimizer.addEdge(edge_fix);
+  // }
 
   optimizer.save("./result_before.g2o");
   optimizer.initializeOptimization();
@@ -218,7 +219,20 @@ int main(int argc, char const **argv)
   // eigen2cv(pose.matrix(),testTTT);
   // cout << testTTT<<endl;
     
+    g2o::VertexSE3Expmap* v0 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(21) );
+    g2o::VertexSE3Expmap* v1 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(22) );
+    g2o::VertexSE3Expmap* v2 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(23) );
+    Eigen::Isometry3d p1 = v0->estimate();
+    Eigen::Isometry3d p2 = v1->estimate();
+    Eigen::Isometry3d p3 = v2->estimate();
 
+    cout<<"Pose1 ="<<endl<<p1.matrix()<<endl;
+    cout<<"Pose2 ="<<endl<<p2.matrix()<<endl;
+    cout<<"Pose3 ="<<endl<<p3.matrix()<<endl;
+
+    cout<<"Pose12 ="<<endl<<(p2*(p1.inverse())).matrix()<<endl;
+    cout<<"Pose23 ="<<endl<<(p3*(p2.inverse())).matrix()<<endl;
+    // Mat testTTT;
 
   return 0;
 }

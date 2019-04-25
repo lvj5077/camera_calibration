@@ -62,18 +62,18 @@ public:
       const VertexSE3Expmap* v2 = static_cast<const VertexSE3Expmap*>(_vertices[1]);
 
       SE3Quat C(_measurement);
-      // SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
-      SE3Quat error_= v2->estimate().inverse()*v1->estimate();
+      SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
+      // SE3Quat error_= v1->estimate().inverse()*C*v2->estimate();
       _error = error_.log();
 
 
-      cout << "_error "<<endl<<_error<<endl;
-      cout << "_error.matrix() "<<endl<<_error.matrix()<<endl;
-      cout << "C "<<endl<<C<<endl;
-      
-      double t_error = 1000*fabs(t_norm - (error_.translation()).norm());
+      // cout << "_error "<<endl<<_error<<endl;
+      // cout << "_error.matrix() "<<endl<<_error.matrix()<<endl;
+      // cout << "C "<<endl<<C<<endl;
       SE3Quat i_quat;
-      double r_error = 1000000000*( error_.rotation().matrix() - i_quat.rotation().matrix()).norm();
+      double t_error = fabs(t_norm - (error_.translation()).norm());
+      
+      double r_error = ( error_.rotation().matrix() - i_quat.rotation().matrix()).norm();
 
       _error[0] =_error[1] =_error[2] = r_error; 
       _error[3] =_error[4] =_error[5] = t_error; 

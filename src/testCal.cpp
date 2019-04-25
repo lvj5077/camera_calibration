@@ -31,6 +31,7 @@
 #include <opencv2/core/eigen.hpp>
 
 #include "myG2Oedge.h"
+#include "edge_expmap_t_norm.h"
 
 using namespace std;
 using namespace cv;
@@ -208,18 +209,24 @@ int main(int argc, char const **argv)
   T_prior(1,3) = 0.0; 
   T_prior(2,3) = 0.50;
 
+  double t_norm = 0.5;
   for (int idx =1;idx< imgs.size();idx++){
-    EdgeSE3_normfixed* edge_fixR = new EdgeSE3_normfixed(0.5);
+    EdgeSE3_normfixed* edge_fixR = new EdgeSE3_normfixed(t_norm);
     // EdgeSE3Expmap* edge_fixR = new EdgeSE3Expmap();
-    edge_fixR->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
-    edge_fixR->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
-    Eigen::Matrix<double, 6, 6> information_fixR = Eigen::Matrix< double, 6,6 >::Identity();
-    information_fixR(0,0) = information_fixR(1,1) = information_fixR(2,2) = 10000000000000000;
-    information_fixR(3,3) = information_fixR(4,4) = information_fixR(5,5) = 10000000000000000; 
-
+    edge_fixR->vertices() [0] = optimizer.vertex( idx+obj.size() );
+    edge_fixR->vertices() [1] = optimizer.vertex( idx+obj.size()+1);
+    Eigen::Matrix<double, 6, 6> information_fixR = 1e7*Eigen::Matrix< double, 6,6 >::Identity();
     edge_fixR->setInformation( information_fixR );
-    // edge_fixR->setMeasurement( T_prior );
     optimizer.addEdge(edge_fixR);
+
+
+    // g2o::EdgeSE3ExpmapNorm* edge_fix = new g2o::EdgeSE3ExpmapNorm(t_norm); 
+    // edge_fix->vertices() [0] = optimizer.vertex( idx+obj.size() );
+    // edge_fix->vertices() [1] = optimizer.vertex( idx+obj.size()+1);
+    // Eigen::Matrix<double, 4, 4> information_fix = 1e7*Eigen::Matrix< double, 4,4 >::Identity();
+    // edge_fix->setInformation( information_fix );
+    // optimizer.addEdge(edge_fix);
+
   }
 
   optimizer.save("./result_before.g2o");

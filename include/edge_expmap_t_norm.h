@@ -16,7 +16,7 @@
 #include <g2o/types/sba/types_six_dof_expmap.h>
 
 #include <g2o/types/slam3d/types_slam3d.h>
-
+#include <iostream>
 #include <cmath>
 
 namespace g2o{
@@ -39,6 +39,7 @@ public:
 	
 	// rotation should be Identity matrix 
 	Vector6 err = Tij.log(); 
+	// cout << "err "<<endl<<err<<endl;
 	_error[0] = err[0]; _error[1] = err[1]; _error[2] = err[2]; 
 	
 	// translation equal to norm 

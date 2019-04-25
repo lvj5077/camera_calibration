@@ -61,6 +61,7 @@ src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Pack
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/sba/sbacam.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/sba/types_sba.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/sba/types_six_dof_expmap.h
+src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/dquat2mat.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_pointxyz.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_se3.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_se3_lotsofxyz.h
@@ -72,6 +73,7 @@ src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Pack
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_se3_xyzprior.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_xyz_prior.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/g2o_types_slam3d_api.h
+src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/isometry3d_gradients.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/isometry3d_mappings.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/parameter_camera.h
 src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o: /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/parameter_se3_offset.h

@@ -30,11 +30,11 @@
 
 #include <opencv2/core/eigen.hpp>
 
-// #include "myG2Oedge.h"
+#include "myG2Oedge.h"
 
 using namespace std;
 using namespace cv;
-
+using namespace g2o;
 
 int main(int argc, char const **argv)
 {
@@ -68,7 +68,7 @@ int main(int argc, char const **argv)
   vector< Point3f > obj;
   for (int i = 0; i < board_height; i++)
     for (int j = 0; j < board_width; j++)
-      obj.push_back(Point3f((float)j * square_size, (float)i * square_size, .01));
+      obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
 
   for (int i=0;i<imgs.size();i++){
     cv::cvtColor(imgs[i], gray, CV_BGR2GRAY);
@@ -138,7 +138,20 @@ int main(int argc, char const **argv)
     v->setId( obj.size() + i );
     if ( i == 0)
           v->setFixed( true );
-    v->setEstimate( g2o::SE3Quat() );
+
+    solvePnP(obj, image_points[0], cameraMatrix, Mat(), rvec, tvec); 
+    Mat R;
+    cv::Rodrigues ( rvec, R );
+    Eigen::Matrix3d R_mat;
+    R_mat <<
+          R.at<double> ( 0,0 ), R.at<double> ( 0,1 ), R.at<double> ( 0,2 ),
+               R.at<double> ( 1,0 ), R.at<double> ( 1,1 ), R.at<double> ( 1,2 ),
+               R.at<double> ( 2,0 ), R.at<double> ( 2,1 ), R.at<double> ( 2,2 );
+    v->setEstimate ( g2o::SE3Quat (
+                            R_mat,
+                            Eigen::Vector3d ( tvec.at<double> ( 0,0 ), tvec.at<double> ( 1,0 ), tvec.at<double> ( 2,0 ) )
+                        ) );
+    // v->setEstimate( g2o::SE3Quat() );
     optimizer.addVertex( v );
   }
 
@@ -182,28 +195,32 @@ int main(int argc, char const **argv)
   // }
 
 
-  // Eigen::Isometry3d T_prior =  Eigen::Isometry3d::Identity();
-  // Mat cvR = cv::Mat::eye(3,3,CV_64F);
-  // Eigen::Matrix3d r_eigen;
-  // for ( int i=0; i<3; i++ )
-  //     for ( int j=0; j<3; j++ ) 
-  //         r_eigen(i,j) = cvR.at<double>(i,j);
+  Eigen::Isometry3d T_prior =  Eigen::Isometry3d::Identity();
+  Mat cvR = cv::Mat::eye(3,3,CV_64F);
+  Eigen::Matrix3d r_eigen;
+  for ( int i=0; i<3; i++ )
+      for ( int j=0; j<3; j++ ) 
+          r_eigen(i,j) = cvR.at<double>(i,j);
 
-  // Eigen::AngleAxisd angle(r_eigen);
-  // T_prior = angle;
-  // T_prior(0,3) = 0.0; 
-  // T_prior(1,3) = 0.0; 
-  // T_prior(2,3) = 0.50;
+  Eigen::AngleAxisd angle(r_eigen);
+  T_prior = angle;
+  T_prior(0,3) = 0.0; 
+  T_prior(1,3) = 0.0; 
+  T_prior(2,3) = 0.50;
 
-  // for (int idx =1;idx< imgs.size();idx++){
-  //   g2o::EdgeSE3* edge_fix = new g2o::EdgeSE3();
-  //   edge_fix->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
-  //   edge_fix->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
-  //   Eigen::Matrix<double, 6, 6> information_fix = 10000000000*Eigen::Matrix< double, 6,6 >::Identity();
-  //   edge_fix->setInformation( information_fix );
-  //   edge_fix->setMeasurement( T_prior );
-  //   optimizer.addEdge(edge_fix);
-  // }
+  for (int idx =1;idx< imgs.size();idx++){
+    EdgeSE3_normfixed* edge_fixR = new EdgeSE3_normfixed(0.5);
+    // EdgeSE3Expmap* edge_fixR = new EdgeSE3Expmap();
+    edge_fixR->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
+    edge_fixR->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
+    Eigen::Matrix<double, 6, 6> information_fixR = Eigen::Matrix< double, 6,6 >::Identity();
+    information_fixR(0,0) = information_fixR(1,1) = information_fixR(2,2) = 100;
+    information_fixR(3,3) = information_fixR(4,4) = information_fixR(5,5) = 10000000000000000; // 不考虑translation了
+
+    edge_fixR->setInformation( information_fixR );
+    // edge_fixR->setMeasurement( T_prior );
+    optimizer.addEdge(edge_fixR);
+  }
 
   optimizer.save("./result_before.g2o");
   optimizer.initializeOptimization();

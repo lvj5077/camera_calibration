@@ -1,3 +1,5 @@
+#pragma once
+
 #include <g2o/core/base_vertex.h>
 #include <g2o/core/base_unary_edge.h>
 #include <g2o/core/block_solver.h>
@@ -22,45 +24,58 @@
 #include <g2o/core/robust_kernel_factory.h>
 #include <g2o/solvers/eigen/linear_solver_eigen.h>
 
+#include "g2o/core/base_binary_edge.h"
+#include "g2o/types/slam3d/g2o_types_slam3d_api.h"
+#include "g2o/types/slam3d/vertex_se3.h"
+#include "g2o/types/slam3d/isometry3d_gradients.h"
+
+
+#include "g2o/core/base_vertex.h"
+#include "g2o/core/base_unary_edge.h"
+#include "g2o/types/slam3d/se3_ops.h"
+#include "g2o/types/sba/types_sba.h"
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
 #include <iostream>
+#include <cmath>
 
 using namespace std;
+using namespace g2o;
 
-// g2o edge
-class EdgeProjectXYZRGBDPoseAndPts : public g2o::BaseBinaryEdge<3, Eigen::Vector3d,g2o::VertexSBAPointXYZ, g2o::VertexSE3Expmap>
-{
+class EdgeSE3_normfixed : public BaseBinaryEdge<6, SE3Quat, VertexSE3Expmap, VertexSE3Expmap>{
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-    EdgeProjectXYZRGBDPoseAndPts( ) {}
-    // EdgeProjectXYZRGBDPoseAndPts( const Eigen::Vector3d& point ) : _point(point) {}
 
-    void computeError();
+    double t_norm;
 
-    void linearizeOplus();
+    EdgeSE3_normfixed(double tnorm);
 
-    bool read ( istream& in ) {}
-    bool write ( ostream& out ) const {}
-protected:
-    Eigen::Vector3d _point;
-};
+    bool read(std::istream& is);
+
+    bool write(std::ostream& os) const;
+
+    void computeError()  {
+      const VertexSE3Expmap* v1 = static_cast<const VertexSE3Expmap*>(_vertices[0]);
+      const VertexSE3Expmap* v2 = static_cast<const VertexSE3Expmap*>(_vertices[1]);
+
+      SE3Quat C(_measurement);
+      SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
+      _error = error_.log();
 
 
-class EdgeProjectXYZRGBDPoseOnly : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, g2o::VertexSE3Expmap>
-{
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-    EdgeProjectXYZRGBDPoseOnly( const Eigen::Vector3d& point ) : _point(point) {}
+      cout << "_error "<<endl<<_error<<endl;
+      cout << "_error.matrix() "<<endl<<_error.matrix()<<endl;
+      cout << "C "<<endl<<C<<endl;
+      
+      double t_error = 1000*fabs(t_norm - (error_.translation()).norm());
+      SE3Quat i_quat;
+      double r_error = 1000000000*( error_.rotation().matrix() - i_quat.rotation().matrix()).norm();
 
-    void computeError();
+      _error[0] =_error[1] =_error[2] = r_error; 
+      _error[3] =_error[4] =_error[5] = t_error; 
 
-    void linearizeOplus();
-
-    bool read ( istream& in ) {}
-    bool write ( ostream& out ) const {}
-protected:
-    Eigen::Vector3d _point;
+    }
 };

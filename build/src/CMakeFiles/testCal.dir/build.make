@@ -79,6 +79,7 @@ testCal_EXTERNAL_OBJECTS =
 
 ../bin/testCal: src/CMakeFiles/testCal.dir/testCal.cpp.o
 ../bin/testCal: src/CMakeFiles/testCal.dir/build.make
+../bin/testCal: ../lib/libmyG2Oedge.a
 ../bin/testCal: /Users/lingqiujin/Third_Party_Packages/opencv-3.4.5/build/lib/libopencv_dnn.3.4.5.dylib
 ../bin/testCal: /Users/lingqiujin/Third_Party_Packages/opencv-3.4.5/build/lib/libopencv_ml.3.4.5.dylib
 ../bin/testCal: /Users/lingqiujin/Third_Party_Packages/opencv-3.4.5/build/lib/libopencv_objdetect.3.4.5.dylib

@@ -47,6 +47,22 @@ g2o/core/robust_kernel_factory.h
 -
 g2o/solvers/eigen/linear_solver_eigen.h
 -
+g2o/core/base_binary_edge.h
+../include/g2o/core/base_binary_edge.h
+g2o/types/slam3d/g2o_types_slam3d_api.h
+../include/g2o/types/slam3d/g2o_types_slam3d_api.h
+g2o/types/slam3d/vertex_se3.h
+../include/g2o/types/slam3d/vertex_se3.h
+g2o/types/slam3d/isometry3d_gradients.h
+../include/g2o/types/slam3d/isometry3d_gradients.h
+g2o/core/base_vertex.h
+../include/g2o/core/base_vertex.h
+g2o/core/base_unary_edge.h
+../include/g2o/core/base_unary_edge.h
+g2o/types/slam3d/se3_ops.h
+../include/g2o/types/slam3d/se3_ops.h
+g2o/types/sba/types_sba.h
+../include/g2o/types/sba/types_sba.h
 Eigen/Core
 -
 Eigen/Geometry
@@ -54,6 +70,8 @@ Eigen/Geometry
 Eigen/SVD
 -
 iostream
+-
+cmath
 -
 
 /Users/lingqiujin/Q_MAC/work/camera_calibration/src/myG2Oedge.cpp
@@ -670,6 +688,12 @@ types_sba.h
 Eigen/Geometry
 -
 
+/Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/dquat2mat.h
+Eigen/Core
+-
+g2o_types_slam3d_api.h
+/Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/g2o_types_slam3d_api.h
+
 /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/edge_pointxyz.h
 vertex_pointxyz.h
 /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/vertex_pointxyz.h
@@ -773,6 +797,14 @@ vertex_pointxyz.h
 /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/g2o_types_slam3d_api.h
 g2o/config.h
 /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/g2o/config.h
+
+/Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/isometry3d_gradients.h
+isometry3d_mappings.h
+/Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/isometry3d_mappings.h
+dquat2mat.h
+/Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/dquat2mat.h
+Eigen/Core
+-
 
 /Users/lingqiujin/Third_Party_Packages/g2o/g2o/types/slam3d/isometry3d_mappings.h
 g2o_types_slam3d_api.h

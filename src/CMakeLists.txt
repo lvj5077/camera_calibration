@@ -37,15 +37,16 @@ include_directories( ${CSparse_include_DIR} )
 link_directories( ${CSparse_include_LIB} )
 
 
-# ADD_LIBRARY( myG2Oedge myG2Oedge.cpp )
-# TARGET_LINK_LIBRARIES( myG2Oedge
-#    g2o_core g2o_stuff g2o_types_sba g2o_csparse_extension g2o_solver_csparse g2o_types_slam3d
-#    ${CSparse_include_LIB} 
-# )
+ADD_LIBRARY( myG2Oedge myG2Oedge.cpp )
+TARGET_LINK_LIBRARIES( myG2Oedge
+   g2o_core g2o_stuff g2o_types_sba g2o_csparse_extension g2o_solver_csparse g2o_types_slam3d
+   ${CSparse_include_LIB} 
+)
 
 
 ADD_EXECUTABLE( testCal testCal.cpp )
 TARGET_LINK_LIBRARIES( testCal
+	myG2Oedge
     ${OpenCV_LIBS}
     g2o_core g2o_types_slam3d g2o_solver_csparse g2o_stuff g2o_csparse_extension g2o_types_sba
     ${CSparse_include_LIB} 

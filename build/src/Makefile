@@ -111,6 +111,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+src/CMakeFiles/myG2Oedge.dir/rule:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/myG2Oedge.dir/rule
+.PHONY : src/CMakeFiles/myG2Oedge.dir/rule
+
+# Convenience name for target.
+myG2Oedge: src/CMakeFiles/myG2Oedge.dir/rule
+
+.PHONY : myG2Oedge
+
+# fast build rule for target.
+myG2Oedge/fast:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/myG2Oedge.dir/build.make src/CMakeFiles/myG2Oedge.dir/build
+.PHONY : myG2Oedge/fast
+
+# Convenience name for target.
 src/CMakeFiles/testCal.dir/rule:
 	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/testCal.dir/rule
 .PHONY : src/CMakeFiles/testCal.dir/rule
@@ -167,6 +182,33 @@ main.cpp.s:
 	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/main.dir/build.make src/CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+myG2Oedge.o: myG2Oedge.cpp.o
+
+.PHONY : myG2Oedge.o
+
+# target to build an object file
+myG2Oedge.cpp.o:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/myG2Oedge.dir/build.make src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.o
+.PHONY : myG2Oedge.cpp.o
+
+myG2Oedge.i: myG2Oedge.cpp.i
+
+.PHONY : myG2Oedge.i
+
+# target to preprocess a source file
+myG2Oedge.cpp.i:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/myG2Oedge.dir/build.make src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.i
+.PHONY : myG2Oedge.cpp.i
+
+myG2Oedge.s: myG2Oedge.cpp.s
+
+.PHONY : myG2Oedge.s
+
+# target to generate assembly for a file
+myG2Oedge.cpp.s:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/myG2Oedge.dir/build.make src/CMakeFiles/myG2Oedge.dir/myG2Oedge.cpp.s
+.PHONY : myG2Oedge.cpp.s
+
 testCal.o: testCal.cpp.o
 
 .PHONY : testCal.o
@@ -202,11 +244,15 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... myG2Oedge"
 	@echo "... testCal"
 	@echo "... main"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... myG2Oedge.o"
+	@echo "... myG2Oedge.i"
+	@echo "... myG2Oedge.s"
 	@echo "... testCal.o"
 	@echo "... testCal.i"
 	@echo "... testCal.s"

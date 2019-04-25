@@ -63,7 +63,6 @@ public:
 
       SE3Quat C(_measurement);
       SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
-      // SE3Quat error_= v1->estimate().inverse()*C*v2->estimate();
       _error = error_.log();
 
 
@@ -71,10 +70,10 @@ public:
       // cout << "_error.matrix() "<<endl<<_error.matrix()<<endl;
       // cout << "C "<<endl<<C<<endl;
       SE3Quat i_quat;
+      double r_error = ( error_.rotation().matrix() - i_quat.rotation().matrix()).norm();
       double t_error = fabs(t_norm - (error_.translation()).norm());
       
-      double r_error = ( error_.rotation().matrix() - i_quat.rotation().matrix()).norm();
-
+    
       _error[0] =_error[1] =_error[2] = r_error; 
       _error[3] =_error[4] =_error[5] = t_error; 
 

@@ -55,7 +55,10 @@ int main(int argc, char const **argv)
   imgs.push_back(img);
   img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/160.png", CV_LOAD_IMAGE_COLOR);
   imgs.push_back(img);
-
+  img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/210.png", CV_LOAD_IMAGE_COLOR);
+  imgs.push_back(img);
+  img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/260.png", CV_LOAD_IMAGE_COLOR);
+  imgs.push_back(img);
   double cx = 322.5009460449219;
   double cy = 242.32693481445312;
   double fx = 615.2476806640625;
@@ -90,19 +93,19 @@ int main(int argc, char const **argv)
     }
   }
 
-  Mat rvec,tvec;
+  // Mat rvec,tvec;
   double camera_matrix_data[3][3] = {
       {fx, 0, cx},
       {0, fy, cy},
       {0, 0, 1}
   };
   cv::Mat cameraMatrix( 3, 3, CV_64F, camera_matrix_data );
-  solvePnP(obj, image_points[0], cameraMatrix, Mat(), rvec, tvec); 
-  cout << tvec<<endl;
-  solvePnP(obj, image_points[1], cameraMatrix, Mat(), rvec, tvec); 
-  cout << tvec<<endl;
-  solvePnP(obj, image_points[2], cameraMatrix, Mat(), rvec, tvec); 
-  cout << tvec<<endl;
+  // solvePnP(obj, image_points[0], cameraMatrix, Mat(), rvec, tvec); 
+  // cout << tvec<<endl;
+  // solvePnP(obj, image_points[1], cameraMatrix, Mat(), rvec, tvec); 
+  // cout << tvec<<endl;
+  // solvePnP(obj, image_points[2], cameraMatrix, Mat(), rvec, tvec); 
+  // cout << tvec<<endl;
 //=========================================================================================================================
   g2o::SparseOptimizer optimizer;
     
@@ -132,22 +135,21 @@ int main(int argc, char const **argv)
   }
 
   // camera pose || reference is points on wall which is also fixed 
-  for ( int i=0; i<imgs.size()+1; i++ )
+  for ( int i=0; i<imgs.size(); i++ )
   {
     // g2o::VertexSE3* v = new g2o::VertexSE3();
     g2o::VertexSE3Expmap* v = new g2o::VertexSE3Expmap(); // camera pose
     v->setId( obj.size() + i );
-    if ( i == 0)
-          v->setFixed( true );
 
-    solvePnP(obj, image_points[0], cameraMatrix, Mat(), rvec, tvec); 
     Mat R;
+    Mat rvec,tvec;
+    solvePnP(obj, image_points[i], cameraMatrix, Mat(), rvec, tvec); 
     cv::Rodrigues ( rvec, R );
     Eigen::Matrix3d R_mat;
     R_mat <<
           R.at<double> ( 0,0 ), R.at<double> ( 0,1 ), R.at<double> ( 0,2 ),
-               R.at<double> ( 1,0 ), R.at<double> ( 1,1 ), R.at<double> ( 1,2 ),
-               R.at<double> ( 2,0 ), R.at<double> ( 2,1 ), R.at<double> ( 2,2 );
+          R.at<double> ( 1,0 ), R.at<double> ( 1,1 ), R.at<double> ( 1,2 ),
+          R.at<double> ( 2,0 ), R.at<double> ( 2,1 ), R.at<double> ( 2,2 );
     v->setEstimate ( g2o::SE3Quat (
                             R_mat,
                             Eigen::Vector3d ( tvec.at<double> ( 0,0 ), tvec.at<double> ( 1,0 ), tvec.at<double> ( 2,0 ) )
@@ -167,7 +169,7 @@ int main(int argc, char const **argv)
     {
         g2o::EdgeProjectXYZ2UV*  edge = new g2o::EdgeProjectXYZ2UV();
         edge->vertices() [0] = optimizer.vertex( i );
-        edge->vertices() [1] = optimizer.vertex( obj.size()+idx+1);
+        edge->vertices() [1] = optimizer.vertex( obj.size()+idx);
         edge->setMeasurement( Eigen::Vector2d(((image_points[idx])[i]).x, ((image_points[idx])[i]).y ) );
         edge->setInformation( Eigen::Matrix2d::Identity() );
         edge->setParameterId(0, 0);
@@ -213,16 +215,16 @@ int main(int argc, char const **argv)
   for (int idx =1;idx< imgs.size();idx++){
     EdgeSE3_normfixed* edge_fixR = new EdgeSE3_normfixed(t_norm);
     // EdgeSE3Expmap* edge_fixR = new EdgeSE3Expmap();
-    edge_fixR->vertices() [0] = optimizer.vertex( idx+obj.size() );
-    edge_fixR->vertices() [1] = optimizer.vertex( idx+obj.size()+1);
+    edge_fixR->vertices() [0] = optimizer.vertex( idx+obj.size()-1 );
+    edge_fixR->vertices() [1] = optimizer.vertex( idx+obj.size());
     Eigen::Matrix<double, 6, 6> information_fixR = 1e7*Eigen::Matrix< double, 6,6 >::Identity();
     edge_fixR->setInformation( information_fixR );
     optimizer.addEdge(edge_fixR);
 
 
     // g2o::EdgeSE3ExpmapNorm* edge_fix = new g2o::EdgeSE3ExpmapNorm(t_norm); 
-    // edge_fix->vertices() [0] = optimizer.vertex( idx+obj.size() );
-    // edge_fix->vertices() [1] = optimizer.vertex( idx+obj.size()+1);
+    // edge_fix->vertices() [0] = optimizer.vertex( idx+obj.size() -1);
+    // edge_fix->vertices() [1] = optimizer.vertex( idx+obj.size());
     // Eigen::Matrix<double, 4, 4> information_fix = 1e7*Eigen::Matrix< double, 4,4 >::Identity();
     // edge_fix->setInformation( information_fix );
     // optimizer.addEdge(edge_fix);
@@ -243,20 +245,29 @@ int main(int argc, char const **argv)
   // eigen2cv(pose.matrix(),testTTT);
   // cout << testTTT<<endl;
     
-    g2o::VertexSE3Expmap* v0 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(21) );
-    g2o::VertexSE3Expmap* v1 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(22) );
-    g2o::VertexSE3Expmap* v2 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(23) );
+    g2o::VertexSE3Expmap* v0 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(20) );
+    // g2o::VertexSE3Expmap* v1 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(21) );
+    // g2o::VertexSE3Expmap* v2 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(22) );
     Eigen::Isometry3d p1 = v0->estimate();
-    Eigen::Isometry3d p2 = v1->estimate();
-    Eigen::Isometry3d p3 = v2->estimate();
+    // Eigen::Isometry3d p2 = v1->estimate();
+    // Eigen::Isometry3d p3 = v2->estimate();
 
     cout<<"Pose1 ="<<endl<<p1.matrix()<<endl;
-    cout<<"Pose2 ="<<endl<<p2.matrix()<<endl;
-    cout<<"Pose3 ="<<endl<<p3.matrix()<<endl;
+    // cout<<"Pose2 ="<<endl<<p2.matrix()<<endl;
+    // cout<<"Pose3 ="<<endl<<p3.matrix()<<endl;
 
-    cout<<"Pose12 ="<<endl<<(p2*(p1.inverse())).matrix()<<endl;
-    cout<<"Pose23 ="<<endl<<(p3*(p2.inverse())).matrix()<<endl;
-    // Mat testTTT;
+    // cout<<"Pose12 ="<<endl<<(p2*(p1.inverse())).matrix()<<endl;
+    // cout<<"Pose23 ="<<endl<<(p3*(p2.inverse())).matrix()<<endl;
+
+
+  for (int idx =1;idx< imgs.size();idx++){
+    g2o::VertexSE3Expmap* vi = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex( idx+obj.size()-1 ) );
+    g2o::VertexSE3Expmap* vj = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex( idx+obj.size() ) );
+    Eigen::Isometry3d pi = vi->estimate();
+    Eigen::Isometry3d pj = vj->estimate();
+    cout<<"Pose "<<idx-1 <<" to "<< idx << endl<<(pj*(pi.inverse())).matrix()<<endl;
+
+  }
 
   return 0;
 }

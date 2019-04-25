@@ -2,6 +2,7 @@
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/CMakeFiles/edit_cache.dir
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/rebuild_cache.dir
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/edit_cache.dir
+/Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/HeG2Oedge.dir
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/myG2Oedge.dir
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/testCal.dir
 /Users/lingqiujin/Q_MAC/work/camera_calibration/build/src/CMakeFiles/main.dir

@@ -13,6 +13,7 @@
 // for g2o
 #include <g2o/core/sparse_optimizer.h>
 #include <g2o/core/block_solver.h>
+#include <g2o/core/linear_solver.h>
 #include <g2o/core/robust_kernel.h>
 #include <g2o/core/robust_kernel_impl.h>
 #include <g2o/core/optimization_algorithm_levenberg.h>
@@ -20,6 +21,7 @@
 #include <g2o/types/slam3d/se3quat.h>
 #include <g2o/types/sba/types_six_dof_expmap.h>
 
+#include <g2o/types/slam2d/types_slam2d.h>
 #include <g2o/types/slam3d/types_slam3d.h>
 #include <g2o/core/factory.h>
 #include <g2o/core/optimization_algorithm_factory.h>
@@ -28,13 +30,45 @@
 #include <g2o/core/robust_kernel_factory.h>
 #include <g2o/solvers/eigen/linear_solver_eigen.h>
 
+// #include "edge_expmap_t_norm.h"
+#include "multi_edge_expmap_t_norm.h"
+
 #include <opencv2/core/eigen.hpp>
 
-#include "myG2Oedge.h"
+// #include "myG2Oedge.h"
 
 using namespace std;
 using namespace cv;
-using namespace g2o;
+
+/*
+// void check_error( g2o::SparseOptimizer& pg, int M, int N)
+void check_error(vector<g2o::EdgeSE3ExpmapNorm*> & vedge)
+{
+    double sum_angle = 0; 
+    double sum_norm_t = 0; 
+    
+    int N = vedge.size(); 
+    for(int i = 1; i<N; i++)
+    {
+	g2o::EdgeSE3ExpmapNorm* pe = (vedge[i]); 
+	pe->computeError(); 
+	g2o::Vector4 err = pe->error(); 
+	Eigen::Vector3d ae = err.block<3,1>(0,0); 
+	double te = err[3]; 
+	sum_angle += ae.norm(); 
+	sum_norm_t += te; 
+    }
+    if(N > 0)
+    {
+	cout <<"average angle_error: "<<sum_angle/(double)(N)<<endl;
+	cout <<"average t_norm_error: "<<sum_norm_t/(double)(N)<<endl; 
+    }
+}*/
+
+
+bool g_use_encoder_constraint = true; 
+
+const int DT_ID = 7777; 
 
 int main(int argc, char const **argv)
 {
@@ -48,12 +82,15 @@ int main(int argc, char const **argv)
   int board_width, board_height, num_imgs;
   float square_size;
 
-  img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/60.png", CV_LOAD_IMAGE_COLOR);
+  img = imread("60.png", CV_LOAD_IMAGE_COLOR);
   imgs.push_back(img);
-  img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/110.png", CV_LOAD_IMAGE_COLOR);
+  img = imread("110.png", CV_LOAD_IMAGE_COLOR);
   imgs.push_back(img);
-  img = imread("/Users/lingqiujin/Data/slider_01_11_2019/line20_01/Average/color/160.png", CV_LOAD_IMAGE_COLOR);
+  img = imread("160.png", CV_LOAD_IMAGE_COLOR);
   imgs.push_back(img);
+  //  img = imread("210.png", CV_LOAD_IMAGE_COLOR);
+  // imgs.push_back(img);
+  // img = imread("260.png", CV_LOAD_IMAGE_COLOR);
 
   double cx = 322.5009460449219;
   double cy = 242.32693481445312;
@@ -72,15 +109,15 @@ int main(int argc, char const **argv)
 
   for (int i=0;i<imgs.size();i++){
     cv::cvtColor(imgs[i], gray, CV_BGR2GRAY);
-    found = cv::findChessboardCorners(imgs[i], board_size, corners,
+    found = cv::findChessboardCorners(gray, board_size, corners,
                                       CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
     if (found) {
       cornerSubPix(gray, corners, cv::Size(5, 5), cv::Size(-1, -1),
                      TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
 
-      // drawChessboardCorners(gray, board_size, corners, true);
-      // cv::imshow( "checkerboard", gray );
-      // cv::waitKey( 0 );  
+       drawChessboardCorners(gray, board_size, corners, true);
+       cv::imshow( "checkerboard", gray );
+       cv::waitKey( 0 );  
 
       // cout << "corners"<<endl<< corners <<endl;
 
@@ -89,6 +126,7 @@ int main(int argc, char const **argv)
     }
   }
 
+/*
   Mat rvec,tvec;
   double camera_matrix_data[3][3] = {
       {fx, 0, cx},
@@ -101,11 +139,14 @@ int main(int argc, char const **argv)
   solvePnP(obj, image_points[1], cameraMatrix, Mat(), rvec, tvec); 
   cout << tvec<<endl;
   solvePnP(obj, image_points[2], cameraMatrix, Mat(), rvec, tvec); 
-  cout << tvec<<endl;
+  cout << tvec<<endl;*/
 //=========================================================================================================================
   g2o::SparseOptimizer optimizer;
     
-  typedef g2o::BlockSolver_6_3 SlamBlockSolver; 
+  // typedef g2o::BlockSolver_6_3 SlamBlockSolver; 
+  typedef g2o::BlockSolver< g2o::BlockSolverTraits<-1, -1> >  SlamBlockSolver;
+  // typedef LinearSolverCSparse<SclamBlockSolver::PoseMatrixType> SclamLinearSolver;
+  // typedef g2o::LinearSolverCSparse::BlockSolverX SlamBlockSolver; 
   typedef g2o::LinearSolverEigen< SlamBlockSolver::PoseMatrixType > SlamLinearSolver; 
   std::unique_ptr<SlamLinearSolver> linearSolver ( new SlamLinearSolver());
   linearSolver->setBlockOrdering( false );
@@ -129,29 +170,24 @@ int main(int argc, char const **argv)
       v->setEstimate( Eigen::Vector3d(x,y,z) );
       optimizer.addVertex( v );
   }
+  
+  int M = obj.size(); // number of feature points 
+  int N = imgs.size();  // number of camera pose
 
   // camera pose || reference is points on wall which is also fixed 
-  for ( int i=0; i<imgs.size()+1; i++ )
+  for ( int i=0; i<imgs.size(); i++ )
   {
-    // g2o::VertexSE3* v = new g2o::VertexSE3();
-    g2o::VertexSE3Expmap* v = new g2o::VertexSE3Expmap(); // camera pose
-    v->setId( obj.size() + i );
-    if ( i == 0)
-          v->setFixed( true );
-
-    solvePnP(obj, image_points[0], cameraMatrix, Mat(), rvec, tvec); 
-    Mat R;
-    cv::Rodrigues ( rvec, R );
-    Eigen::Matrix3d R_mat;
-    R_mat <<
-          R.at<double> ( 0,0 ), R.at<double> ( 0,1 ), R.at<double> ( 0,2 ),
-               R.at<double> ( 1,0 ), R.at<double> ( 1,1 ), R.at<double> ( 1,2 ),
-               R.at<double> ( 2,0 ), R.at<double> ( 2,1 ), R.at<double> ( 2,2 );
-    v->setEstimate ( g2o::SE3Quat (
-                            R_mat,
-                            Eigen::Vector3d ( tvec.at<double> ( 0,0 ), tvec.at<double> ( 1,0 ), tvec.at<double> ( 2,0 ) )
-                        ) );
-    // v->setEstimate( g2o::SE3Quat() );
+    g2o::VertexSE3Expmap* v = new g2o::VertexSE3Expmap();
+    v->setId( M + i );
+    // if ( i == 0)
+    //      v->setFixed( true );
+    // if(i==0)
+    {
+	g2o::SE3Quat mea(Eigen::Matrix3d::Identity(), Eigen::Vector3d(-0.11, -0.066, 0.6 + i*0.2)); 
+	// v->setEstimate( g2o::SE3Quat() );
+	v->setEstimate(mea);
+    }
+    
     optimizer.addVertex( v );
   }
 
@@ -160,72 +196,77 @@ int main(int argc, char const **argv)
   camera->setId(0);
   optimizer.addParameter( camera );
 
-
   for (int idx =0;idx< imgs.size();idx++){
     for ( size_t i=0; i<(image_points[idx]).size(); i++ )
     {
         g2o::EdgeProjectXYZ2UV*  edge = new g2o::EdgeProjectXYZ2UV();
         edge->vertices() [0] = optimizer.vertex( i );
-        edge->vertices() [1] = optimizer.vertex( obj.size()+idx+1);
+        edge->vertices() [1] = optimizer.vertex( obj.size()+idx);
+
+	g2o::VertexSE3Expmap* v = dynamic_cast<g2o::VertexSE3Expmap*>(edge->vertices()[1]);
+	g2o::VertexSBAPointXYZ* vp = dynamic_cast<g2o::VertexSBAPointXYZ*>(edge->vertices()[0]); 
+	// cout<<"node point i = "<<i<<" estimate() "<< vp->estimate()<<endl; 
+	// cout<<"node pose j = "<< (obj.size()+idx+1) << "estimate() " <<v->estimate().toVector()<<endl;
+    
         edge->setMeasurement( Eigen::Vector2d(((image_points[idx])[i]).x, ((image_points[idx])[i]).y ) );
         edge->setInformation( Eigen::Matrix2d::Identity() );
         edge->setParameterId(0, 0);
-        edge->setRobustKernel( new g2o::RobustKernelHuber() );
+	
+        // edge->setRobustKernel( new g2o::RobustKernelHuber() );
         optimizer.addEdge( edge );
+	edge->computeError(); 
+	// cout<<"edge-> "<<i<<" "<<obj.size()+idx +1<<" error: "<<edge->error()<<endl;
+	
     }
   }
 
-//=====================================add code wheel constarin===============================================================
-  // for ( int i=0; i<imgs.size(); i++ )
-  // {
-  //     g2o::VertexSE3* v = new g2o::VertexSE3();
-  //     v->setId(i+imgs.size()+obj.size()+1);
-  //     v->setEstimate( g2o::SE3Quat() );
-  //     optimizer.addVertex( v );
+  // add dt node 
+  g2o::VertexPointXY* p_dt_v = new g2o::VertexPointXY; 
+  p_dt_v->setId(DT_ID); 
+  optimizer.addVertex(p_dt_v); 
 
-  //     g2o::EdgeSE3* edge_CtoW = new g2o::EdgeSE3();
-  //     edge_CtoW->vertices() [0] = optimizer.vertex( i+1 );
-  //     edge_CtoW->vertices() [1] = optimizer.vertex( i+imgs.size()+obj.size()+1 );
-  //     Eigen::Matrix<double, 6, 6> information_CtoW = Eigen::Matrix< double, 6,6 >::Identity();
-  //     information_CtoW(0,0) = information_CtoW(1,1) = information_CtoW(2,2) = 100;
-  //     information_CtoW(3,3) = information_CtoW(4,4) = information_CtoW(5,5) = 10000000000000000; // 不考虑translation了
-  //     edge_CtoW->setInformation( information_CtoW );
-  //     edge_CtoW->setMeasurement( g2o::SE3Quat() ); ////需要求解
-  //     optimizer.addEdge(edge_CtoW);
-  // }
+  const double t_norm = 0.5; 
+  // vector<g2o::EdgeSE3ExpmapNorm*> vedge; 
+  g2o::MultiEdgeSE3ExpmapNorm* pmul = new g2o::MultiEdgeSE3ExpmapNorm(t_norm); 
+  pmul->initialEstimate(&optimizer, M, N, DT_ID); 
+  if(g_use_encoder_constraint)
+    optimizer.addEdge(pmul); 
+  
 
-
-  Eigen::Isometry3d T_prior =  Eigen::Isometry3d::Identity();
-  Mat cvR = cv::Mat::eye(3,3,CV_64F);
-  Eigen::Matrix3d r_eigen;
-  for ( int i=0; i<3; i++ )
-      for ( int j=0; j<3; j++ ) 
-          r_eigen(i,j) = cvR.at<double>(i,j);
-
-  Eigen::AngleAxisd angle(r_eigen);
-  T_prior = angle;
-  T_prior(0,3) = 0.0; 
-  T_prior(1,3) = 0.0; 
-  T_prior(2,3) = 0.50;
-
+  /*
   for (int idx =1;idx< imgs.size();idx++){
-    EdgeSE3_normfixed* edge_fixR = new EdgeSE3_normfixed(0.5);
-    // EdgeSE3Expmap* edge_fixR = new EdgeSE3Expmap();
-    edge_fixR->vertices() [0] = optimizer.vertex( idx+imgs.size()+obj.size() );
-    edge_fixR->vertices() [1] = optimizer.vertex( idx+imgs.size()+obj.size()+1);
-    Eigen::Matrix<double, 6, 6> information_fixR = Eigen::Matrix< double, 6,6 >::Identity();
-    information_fixR(0,0) = information_fixR(1,1) = information_fixR(2,2) = 10000000000000000;
-    information_fixR(3,3) = information_fixR(4,4) = information_fixR(5,5) = 10000000000000000; 
-
-    edge_fixR->setInformation( information_fixR );
-    // edge_fixR->setMeasurement( T_prior );
-    optimizer.addEdge(edge_fixR);
+    // g2o::EdgeSE3* edge_fix = new g2o::EdgeSE3();
+    g2o::EdgeSE3ExpmapNorm* edge_fix = new g2o::EdgeSE3ExpmapNorm(t_norm); 
+    edge_fix->vertices() [0] = optimizer.vertex( idx+ M -1);
+    edge_fix->vertices() [1] = optimizer.vertex( idx+ M );
+    Eigen::Matrix<double, 4, 4> information_fix = 1e7*Eigen::Matrix< double, 4,4 >::Identity();
+    edge_fix->setInformation( information_fix );
+    // edge_fix->setMeasurement( T_prior );
+    if(g_use_encoder_constraint)
+        optimizer.addEdge(edge_fix);
+    vedge.push_back(edge_fix); 
+  }*/
+  
+  if(g_use_encoder_constraint){
+    cout<<"encoder constraints are added into graph structure!"<<endl; 
+  }else{
+    cout<<"no encoder constraint, only bundle adjustment "<<endl; 
   }
+  cout<<"before optimization, check error: "<<endl; 
 
   optimizer.save("./result_before.g2o");
   optimizer.initializeOptimization();
   optimizer.optimize(100);
   optimizer.save("./result_after.g2o");
+
+  if(g_use_encoder_constraint){
+    cout<<"encoder constraints are added into graph structure!"<<endl; 
+  }else{
+    cout<<"no encoder constraint, only bundle adjustment "<<endl; 
+  }
+
+  cout<<"after optimization, check error: "<<endl;; 
+  // check_error(vedge); 
 
   // g2o::VertexSE3* v = dynamic_cast<g2o::VertexSE3*>( optimizer.vertex(1) );
   // Eigen::Isometry3d pose = v->estimate();
@@ -235,21 +276,7 @@ int main(int argc, char const **argv)
   // Mat testTTT;
   // eigen2cv(pose.matrix(),testTTT);
   // cout << testTTT<<endl;
-    
-    g2o::VertexSE3Expmap* v0 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(21) );
-    g2o::VertexSE3Expmap* v1 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(22) );
-    g2o::VertexSE3Expmap* v2 = dynamic_cast<g2o::VertexSE3Expmap*>( optimizer.vertex(23) );
-    Eigen::Isometry3d p1 = v0->estimate();
-    Eigen::Isometry3d p2 = v1->estimate();
-    Eigen::Isometry3d p3 = v2->estimate();
 
-    cout<<"Pose1 ="<<endl<<p1.matrix()<<endl;
-    cout<<"Pose2 ="<<endl<<p2.matrix()<<endl;
-    cout<<"Pose3 ="<<endl<<p3.matrix()<<endl;
-
-    cout<<"Pose12 ="<<endl<<(p2*(p1.inverse())).matrix()<<endl;
-    cout<<"Pose23 ="<<endl<<(p3*(p2.inverse())).matrix()<<endl;
-    // Mat testTTT;
 
   return 0;
 }

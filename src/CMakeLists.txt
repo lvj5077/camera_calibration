@@ -43,6 +43,20 @@ TARGET_LINK_LIBRARIES( myG2Oedge
    ${CSparse_include_LIB} 
 )
 
+ADD_LIBRARY( HeG2Oedge edge_expmap_t_norm.cpp )
+TARGET_LINK_LIBRARIES( HeG2Oedge
+   g2o_core g2o_stuff g2o_types_sba g2o_csparse_extension g2o_solver_csparse g2o_types_slam3d
+   ${CSparse_include_LIB} 
+)
+
+
+# ADD_EXECUTABLE( testCalMult testCalMult.cpp multi_edge_expmap_t_norm.cpp)
+# TARGET_LINK_LIBRARIES( testCalMult
+#    ${OpenCV_LIBS}
+#    g2o_core g2o_stuff g2o_types_sba g2o_csparse_extension g2o_solver_csparse g2o_types_slam3d
+#    ${CSparse_include_LIB} 
+# )
+
 
 ADD_EXECUTABLE( testCal testCal.cpp )
 TARGET_LINK_LIBRARIES( testCal

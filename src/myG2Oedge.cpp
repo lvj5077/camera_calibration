@@ -9,6 +9,9 @@ bool EdgeSE3_normfixed::read(std::istream& is) {
   Vector7 meas;
   for (int i=0; i<7; i++)
     is >> meas[i];
+
+  Vector3 t_read = Vector3( meas[4], meas[5], meas[6]);
+  t_norm = t_read.norm();
   SE3Quat cam2world;
   cam2world.fromVector(meas);
   setMeasurement(cam2world.inverse());

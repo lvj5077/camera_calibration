@@ -111,6 +111,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+src/CMakeFiles/HeG2Oedge.dir/rule:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/HeG2Oedge.dir/rule
+.PHONY : src/CMakeFiles/HeG2Oedge.dir/rule
+
+# Convenience name for target.
+HeG2Oedge: src/CMakeFiles/HeG2Oedge.dir/rule
+
+.PHONY : HeG2Oedge
+
+# fast build rule for target.
+HeG2Oedge/fast:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/HeG2Oedge.dir/build.make src/CMakeFiles/HeG2Oedge.dir/build
+.PHONY : HeG2Oedge/fast
+
+# Convenience name for target.
 src/CMakeFiles/myG2Oedge.dir/rule:
 	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/myG2Oedge.dir/rule
 .PHONY : src/CMakeFiles/myG2Oedge.dir/rule
@@ -154,6 +169,33 @@ main: src/CMakeFiles/main.dir/rule
 main/fast:
 	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/main.dir/build.make src/CMakeFiles/main.dir/build
 .PHONY : main/fast
+
+edge_expmap_t_norm.o: edge_expmap_t_norm.cpp.o
+
+.PHONY : edge_expmap_t_norm.o
+
+# target to build an object file
+edge_expmap_t_norm.cpp.o:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/HeG2Oedge.dir/build.make src/CMakeFiles/HeG2Oedge.dir/edge_expmap_t_norm.cpp.o
+.PHONY : edge_expmap_t_norm.cpp.o
+
+edge_expmap_t_norm.i: edge_expmap_t_norm.cpp.i
+
+.PHONY : edge_expmap_t_norm.i
+
+# target to preprocess a source file
+edge_expmap_t_norm.cpp.i:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/HeG2Oedge.dir/build.make src/CMakeFiles/HeG2Oedge.dir/edge_expmap_t_norm.cpp.i
+.PHONY : edge_expmap_t_norm.cpp.i
+
+edge_expmap_t_norm.s: edge_expmap_t_norm.cpp.s
+
+.PHONY : edge_expmap_t_norm.s
+
+# target to generate assembly for a file
+edge_expmap_t_norm.cpp.s:
+	cd /Users/lingqiujin/Q_MAC/work/camera_calibration/build && $(MAKE) -f src/CMakeFiles/HeG2Oedge.dir/build.make src/CMakeFiles/HeG2Oedge.dir/edge_expmap_t_norm.cpp.s
+.PHONY : edge_expmap_t_norm.cpp.s
 
 main.o: main.cpp.o
 
@@ -244,9 +286,13 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... HeG2Oedge"
 	@echo "... myG2Oedge"
 	@echo "... testCal"
 	@echo "... main"
+	@echo "... edge_expmap_t_norm.o"
+	@echo "... edge_expmap_t_norm.i"
+	@echo "... edge_expmap_t_norm.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

@@ -207,6 +207,9 @@ Eigen3_DIR:PATH=/opt/local/share/eigen3/cmake
 //The directory containing a CMake configuration file for G2O.
 G2O_DIR:PATH=/usr/local/lib/cmake/g2o
 
+//Dependencies for the target
+HeG2Oedge_LIB_DEPENDS:STATIC=general;g2o_core;general;g2o_stuff;general;g2o_types_sba;general;g2o_csparse_extension;general;g2o_solver_csparse;general;g2o_types_slam3d;general;/usr/local/Cellar/suite-sparse/5.3.0/lib/;
+
 //Include for OpenGL on OS X
 OPENGL_INCLUDE_DIR:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/OpenGL.framework
 

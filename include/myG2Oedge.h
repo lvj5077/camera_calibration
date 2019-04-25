@@ -62,7 +62,8 @@ public:
       const VertexSE3Expmap* v2 = static_cast<const VertexSE3Expmap*>(_vertices[1]);
 
       SE3Quat C(_measurement);
-      SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
+      // SE3Quat error_= v2->estimate().inverse()*C*v1->estimate();
+      SE3Quat error_= v2->estimate().inverse()*v1->estimate();
       _error = error_.log();
 
 
